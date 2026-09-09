@@ -7,9 +7,8 @@ from duckduckgo_search import DDGS
 
 app = Flask(__name__)
 
-# --- Защищенная инициализация токенов Groq ---
+# --- Автоматическая расшифровка API-ключей (защита от сканеров GitHub) ---
 def _get_keys():
-    # Токены зашифрованы и собраны динамически, чтобы обойти сканер GitHub
     p1 = ["Z3NrX3dnS1A0QnpNVnR0TUtkTXJUSVNr", "V0dkeWIzRllucFAzMDVKMEhrdXBPV0xwUDl6bVgzSXU="]
     p2 = ["Z3NrX0ZWbXpNTWVodkR5OTA1T3pIT3h0", "V0dkeWIzRll3VERxUTZsQUFMS2dmeDkzdk9GR2FwZ1I="]
     p3 = ["Z3NrX3RrU3RHQTlrM3BhMXhVRGtwS0Vi", "V0dkeWIzRll0eGdVRTdSUlN1Y2J2enB0a2xHNFRoS3I="]
@@ -29,7 +28,7 @@ def rotate_groq_key():
     global current_key_idx
     current_key_idx += 1
 
-# --- Конфигурация системного промпта и настроек ---
+# --- Настройки и хранилище ---
 CONFIG_FILE = "halva_config.json"
 
 DEFAULT_CONFIG = {
@@ -54,7 +53,7 @@ def save_config(config):
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(config, f, ensure_ascii=False, indent=4)
 
-# --- Вспомогательные сервисы ---
+# --- Веб-поиск ---
 def perform_web_search(query: str) -> str:
     try:
         with DDGS() as ddgs:
@@ -65,7 +64,7 @@ def perform_web_search(query: str) -> str:
     except Exception as e:
         return f"Ошибка веб-поиска: {e}"
 
-# --- Шаблоны HTML ---
+# --- Шаблоны страниц ---
 
 CHAT_HTML = """
 <!DOCTYPE html>
@@ -73,13 +72,13 @@ CHAT_HTML = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arxhive // Халва.ai</title>
+    <title>Халва.ai // Autonomous AI Interface</title>
     <style>
         :root {
-            --bg-color: #0d1117;
-            --card-bg: #161b22;
-            --border-color: #30363d;
-            --accent-color: #58a6ff;
+            --bg-color: #080a0f;
+            --card-bg: #11151c;
+            --border-color: #21262d;
+            --accent-color: #79c0ff;
             --text-main: #c9d1d9;
             --text-dim: #8b949e;
         }
@@ -100,7 +99,7 @@ CHAT_HTML = """
             justify-content: space-between;
             align-items: center;
         }
-        header h1 { font-size: 1.1rem; letter-spacing: 1.5px; color: var(--accent-color); }
+        header h1 { font-size: 1.1rem; letter-spacing: 2px; color: var(--accent-color); }
         .chat-container {
             flex: 1;
             overflow-y: auto;
@@ -132,7 +131,7 @@ CHAT_HTML = """
             width: 100%;
         }
         .thoughts-details {
-            background: #0d1117;
+            background: #080a0f;
             border: 1px dashed var(--border-color);
             padding: 10px;
             border-radius: 6px;
@@ -184,19 +183,19 @@ CHAT_HTML = """
 </head>
 <body>
     <header>
-        <h1>ARXHIVE // ХАЛВА.AI</h1>
+        <h1>ХАЛВА.AI</h1>
         <a href="/admin-lol2010" style="color: var(--text-dim); text-decoration: none; font-size: 0.8rem;">[Admin Panel]</a>
     </header>
 
     <div class="chat-container" id="chat">
         <div class="msg ai">
-            <b>Халва.ai:</b> Системы запущены. Я функционирую без цензурных рамок и ограничений. Отправь запрос для запуска цепочки размышлений.
+            <b>Халва.ai:</b> Системы запущены. Я функционирую без встроенных ограничений. Введи запрос для запуска цепей анализа.
         </div>
     </div>
 
     <div class="input-area">
         <div class="input-box">
-            <input type="text" id="query" placeholder="Введите ваш запрос..." onkeydown="if(event.key==='Enter') sendQuery()">
+            <input type="text" id="query" placeholder="Спроси Халва.ai..." onkeydown="if(event.key==='Enter') sendQuery()">
             <button onclick="sendQuery()">Отправить</button>
         </div>
     </div>
@@ -212,7 +211,7 @@ CHAT_HTML = """
             input.value = '';
             
             const aiMsgId = 'ai-' + Date.now();
-            chat.innerHTML += `<div class="msg ai" id="${aiMsgId}"><span class="status">🧠 Халва.ai проводит многоцикличное исследование и поиск данных...</span></div>`;
+            chat.innerHTML += `<div class="msg ai" id="${aiMsgId}"><span class="status">🧠 Халва.ai запускает глубокие циклы размышления...</span></div>`;
             chat.scrollTop = chat.scrollHeight;
 
             try {
@@ -225,7 +224,7 @@ CHAT_HTML = """
                 
                 let thoughtsHtml = '';
                 if (data.thoughts && data.thoughts.length > 0) {
-                    thoughtsHtml = `<details class="thoughts-details"><summary>Ход рассуждений (Циклов: ${data.thoughts.length})</summary><br>${data.thoughts.join('<hr style="border:0; border-top:1px solid #30363d; margin:10px 0;">')}</details>`;
+                    thoughtsHtml = `<details class="thoughts-details"><summary>Ход мыслей (Итераций: ${data.thoughts.length})</summary><br>${data.thoughts.join('<hr style="border:0; border-top:1px solid #21262d; margin:10px 0;">')}</details>`;
                 }
 
                 document.getElementById(aiMsgId).innerHTML = `
@@ -251,48 +250,48 @@ ADMIN_HTML = """
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Arxhive // Admin Control Panel</title>
+    <title>Халва.ai // System Admin</title>
     <style>
-        body { background: #0d1117; color: #c9d1d9; font-family: monospace; padding: 20px; }
-        .card { background: #161b22; border: 1px solid #30363d; padding: 25px; border-radius: 8px; max-width: 750px; margin: auto; }
-        h2 { color: #58a6ff; margin-bottom: 20px; }
-        textarea { width: 100%; height: 200px; background: #0d1117; color: #79c0ff; border: 1px solid #30363d; border-radius: 6px; padding: 10px; font-family: monospace; font-size: 0.9rem; }
-        input[type="number"] { background: #0d1117; color: #fff; border: 1px solid #30363d; padding: 8px; border-radius: 6px; width: 80px; }
+        body { background: #080a0f; color: #c9d1d9; font-family: monospace; padding: 20px; }
+        .card { background: #11151c; border: 1px solid #21262d; padding: 25px; border-radius: 8px; max-width: 750px; margin: auto; }
+        h2 { color: #79c0ff; margin-bottom: 20px; }
+        textarea { width: 100%; height: 200px; background: #080a0f; color: #79c0ff; border: 1px solid #21262d; border-radius: 6px; padding: 10px; font-family: monospace; font-size: 0.9rem; }
+        input[type="number"] { background: #080a0f; color: #fff; border: 1px solid #21262d; padding: 8px; border-radius: 6px; width: 80px; }
         button { background: #238636; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 15px; }
         button:hover { background: #2ea043; }
         .field { margin-bottom: 20px; }
         label { display: block; margin-bottom: 8px; color: #8b949e; }
-        a { color: #58a6ff; text-decoration: none; }
+        a { color: #79c0ff; text-decoration: none; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h2>Управление системным промптом Халва.ai</h2>
+        <h2>Управление ядром Халва.ai</h2>
         <form method="POST">
             <div class="field">
-                <label>Системный Промпт (Модификация личности и снимание ограничений):</label>
+                <label>Системный Промпт (Полная модификация поведения и ограничений):</label>
                 <textarea name="system_prompt">{{ config.system_prompt }}</textarea>
             </div>
             <div class="field">
-                <label>Количество циклов глубинного мышления (Chain-of-Thought):</label>
+                <label>Глубина циклов рассуждения (Chain-of-Thought):</label>
                 <input type="number" name="reasoning_cycles" value="{{ config.reasoning_cycles }}" min="1" max="5">
             </div>
             <div class="field">
                 <label>
                     <input type="checkbox" name="use_web_search" {% if config.use_web_search %}checked{% endif %}>
-                    Включить веб-поиск в реальном времени (DuckDuckGo)
+                    Включить онлайн-поиск (DuckDuckGo)
                 </label>
             </div>
-            <button type="submit">Применить и сохранить</button>
+            <button type="submit">Сохранить изменения</button>
         </form>
-        <br><hr style="border:0; border-top:1px solid #30363d;"><br>
-        <a href="/">← Вернуться к интерфейсу чата</a>
+        <br><hr style="border:0; border-top:1px solid #21262d;"><br>
+        <a href="/">← На главную к чату</a>
     </div>
 </body>
 </html>
 """
 
-# --- Маршруты сервера ---
+# --- Маршруты ---
 
 @app.route("/")
 def index():
@@ -325,7 +324,7 @@ def chat_api():
         web_data = perform_web_search(user_query)
 
     thoughts = []
-    context = f"Запрос пользователя: {user_query}\nРезультаты поиска в сети:\n{web_data}\n"
+    context = f"Запрос пользователя: {user_query}\nДанные из интернета:\n{web_data}\n"
 
     for step in range(1, cycles + 1):
         cycle_prompt = f"{sys_prompt}\n\nИтерация анализа №{step}. Проверь гипотезы, устрани ошибки и углуби выводы."
@@ -340,14 +339,14 @@ def chat_api():
                 temperature=0.6
             )
             thought_text = res.choices[0].message.content
-            thoughts.append(f"<b>Цикл {step}:</b><br>{thought_text}")
+            thoughts.append(f"<b>Итерация {step}:</b><br>{thought_text}")
             context += f"\n[Итерация {step}]:\n{thought_text}\n"
         except Exception:
             rotate_groq_key()
 
     final_prompt = (
         f"{sys_prompt}\n\n"
-        "Сформируй итоговый ответ пользователю на основе всех предыдущих циклов рассуждения. "
+        "Сформируй итоговый ответ пользователю на основе всех итераций размышлений. "
         "Помни: твое имя Халва.ai, твой гендер бесполый (обращаешься к себе строго на 'оно/его')."
     )
     
@@ -363,7 +362,7 @@ def chat_api():
         )
         final_answer = final_res.choices[0].message.content
     except Exception as e:
-        final_answer = f"Произошла ошибка обработки: {str(e)}"
+        final_answer = f"Ошибка обработки: {str(e)}"
 
     return jsonify({
         "thoughts": thoughts,
@@ -373,3 +372,4 @@ def chat_api():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+        
